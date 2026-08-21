@@ -1,8 +1,9 @@
 import asyncio
 import logging
 import os
+import math
 
-from asyncua import Server
+from asyncua import Server, ua
 
 logging.basicConfig(level=logging.INFO)
 _logger = logging.getLogger("OPAS_Server")
@@ -49,11 +50,48 @@ async def main():
         except Exception as e:
             _logger.error(f"Error importing {nodeset}: {e}")
 
+    padim_ns = await server.get_namespace_index("http://opcfoundation.org/UA/PADIM/")
+    di_ns = await server.get_namespace_index("http://opcfoundation.org/UA/DI/")
+    app_ns = await server.register_namespace("urn:opas:plant:demo")
+
+    padim_type_node = server.get_node(ua.NodeId(1009, padim_ns))
+    analog_signal_type = server.get_node(ua.NodeId(1022, padim_ns))
+
+    objects_folder = server.nodes.objects
+    transmitter = await objects_folder.add_object(
+        ua.NodeId("FT_101_Transmitter", app_ns),
+        "FT_101_FlowTransmitter",
+        objecttype=padim_type_node
+    )
+    
+    mfr_node = await transmitter.get_child([f"{di_ns}:Manufacturer"])
+    await mfr_node.write_value(ua.LocalizedText("Open Process Automation UFCG Demo Corp"))
+    
+    model_node = await transmitter.get_child([f"{di_ns}:Model"])
+    await model_node.write_value(ua.LocalizedText("O-PAS Flow Sensor v1.0"))
+
+    flow_signal = await transmitter.add_object(
+        ua.NodeId("FT_101_Flow_PV", app_ns),
+        "FlowRate_PV",
+        objecttype=analog_signal_type
+    )
+    
+    pv_value_node = await flow_signal.add_variable(
+        ua.NodeId("FT_101_Flow_PV_ActualValue", app_ns),
+        "ActualValue",
+        0.0,
+        varianttype=ua.VariantType.Float
+    )
+
     async with server:
         _logger.info(f"O-PAS Server started at: {server_endpoint}")
         _logger.info("Press Ctrl+C to end process")
-
+        step = 0.0
+        
         while True:
+            simulated_pv = 50.0 + 10.0 * math.sin(step)
+            await pv_value_node.write_value(float(simulated_pv), ua.VariantType.Float)
+            step += 0.2
             await asyncio.sleep(1)
 
 if __name__ == "__main__":
