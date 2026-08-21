@@ -1,0 +1,13 @@
+BrowseName,NodeId,DataType,Access,Unit,Low,High,InitialValue,Kind,Description
+TubeInletTemp,ns=1;i=6000,Double,R,°C,50,250,180,analog,Hot process inlet temperature.
+TubeOutletTemp,ns=1;i=6010,Double,R,°C,40,200,95,analog,Cooled process outlet (controlled variable); held near TubeOutletTempSP by coolant flow.
+ShellInletTemp,ns=1;i=6020,Double,R,°C,10,60,30,analog,Cooling-water supply temperature.
+ShellOutletTemp,ns=1;i=6030,Double,R,°C,10,90,52,analog,Cooling-water return temperature; rises with heat duty.
+TubeFlow,ns=1;i=6040,Double,R,m³/h,0,200,140,analog,Process (tube-side) flow; drifts with upstream load.
+ShellFlow,ns=1;i=6050,Double,R,m³/h,0,300,180,analog,Cooling-water (shell-side) flow; manipulated for outlet temp.
+TubeDP,ns=1;i=6060,Double,R,kPa,0,100,35,analog,Tube-side pressure drop; climbs as fouling builds.
+ShellDP,ns=1;i=6070,Double,R,kPa,0,100,28,analog,Shell-side pressure drop; tracks coolant flow.
+HeatDuty,ns=1;i=6080,Double,R,kW,0,5000,3200,analog,Calculated transferred duty (m*cp*dT); falls as fouling grows.
+FoulingFactor,ns=1;i=6090,Double,R,%,0,100,8,analog,"Fouling / cleanliness index; rises slowly in service, reset on cleaning."
+TubeOutletTempSP,ns=1;i=6100,Double,R/W,°C,40,200,95,analog,Process outlet temperature setpoint (via coolant flow).
+Mode,ns=1;i=6110,Int32,R,,,,0,discrete,Start() puts it InService; Bypass() routes process flow around the exchanger (e.g. for cleaning).
